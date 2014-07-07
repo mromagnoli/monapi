@@ -128,6 +128,32 @@ def process_status(pid):
             '_reason': 'Cannot retrieve info from processes.'
         }), 404
 
+@api.route('/process/<int:pid>/connections', methods=['GET'])
+def process_connections(pid):
+    """Retrieve open connections from a process given
+
+    :param pid: The Process ID to retrieve
+    :type pid: int
+
+    :return JSON
+    """
+    p = psutil.Process(pid)
+    connections = []
+    try:
+        for conn in p.connections():
+            connections.append(_makeConnectionResponse(conn, False))
+        return jsonify({
+            '_status': 'ok',
+            '_count': len(connections),
+            '_data': connections
+        }), 200
+    except Exception, e:
+        print e
+        return jsonify({
+            '_status': 'fail',
+            '_reason': 'Cannot retrieve info from connections.',
+        }), 404
+
 @api.route('/connections', methods=['GET'])
 def connections():
     """Retrieve all connections opened in system
@@ -255,11 +281,14 @@ def _makeProcessResponse(pid):
         'nice': p.nice(),
     }
 
-def _makeConnectionResponse(conn):
+def _makeConnectionResponse(conn, include_pid = True):
     """Generate a dict with data of a connection given
 
     :param conn: The connection data
     :type conn: pconn
+
+    :param include_pid: Whether to include pid value or not
+    :type include_pid: boolean
 
     :return dict
     """
@@ -274,12 +303,15 @@ def _makeConnectionResponse(conn):
         socket.SOCK_DGRAM: 'SOCK_DGRAM'
     }
 
-    return {
+    data = {
         'fd': conn.fd,
         'family': FAMILY[conn.family],
         'type': TYPE[conn.type],
         'local_addr': conn.laddr,
         'remote_addr': conn.raddr,
         'status': conn.status,
-        'pid': conn.pid
     }
+    if include_pid and conn.pid is not None:
+        data['pid'] = conn.pid
+
+    return data
