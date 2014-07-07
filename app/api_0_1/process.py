@@ -106,6 +106,48 @@ def renice(pid, value=''):
             '_reason': 'Access denied for process'
         }), 404
 
+@api.route('/process/<int:pid>/status', methods=['GET'])
+def process_status(pid):
+    """Retrieve status of a process given
+
+    :param pid: The Process ID to retrieve
+    :type pid: int
+
+    :return JSON
+    """
+    try:
+        p = psutil.Process(pid)
+
+        return jsonify({
+            '_status':'ok',
+            '_data': {'process_status': p.status()}
+        })
+    except Exception, e:
+        return jsonify({
+            '_status': 'fail',
+            '_reason': 'Cannot retrieve info from processes.'
+        }), 404
+
+@api.route('/connections', methods=['GET'])
+def connections():
+    """Retrieve all connections opened in system
+
+    :return JSON
+    """
+    connections = []
+    try:
+        for conn in psutil.net_connections():
+            connections.append(_makeConnectionResponse(conn))
+        return jsonify({
+            '_status': 'ok',
+            '_count': len(connections),
+            '_data': connections
+        }), 200
+    except Exception, e:
+        return jsonify({
+            '_status': 'fail',
+            '_reason': 'Cannot retrieve info from connections.',
+        }), 404
 
 def _retrieve_all_process():
     """Get all process running in local system
@@ -194,7 +236,7 @@ def _makeProcessResponse(pid):
     """Generate a dict with data of a process given
 
     :param pid: The Process ID
-    :type path: int
+    :type pid: int
 
     :return dict
     """
@@ -211,4 +253,33 @@ def _makeProcessResponse(pid):
         'tty': p.terminal(),
         'status': p.status(),
         'nice': p.nice(),
+    }
+
+def _makeConnectionResponse(conn):
+    """Generate a dict with data of a connection given
+
+    :param conn: The connection data
+    :type conn: pconn
+
+    :return dict
+    """
+    import socket
+    FAMILY = {
+        socket.AF_INET: 'AF_INET',
+        socket.AF_INET6: 'AF_INET6',
+        socket.AF_UNIX: 'AF_UNIX',
+    }
+    TYPE = {
+        socket.SOCK_STREAM: 'SOCK_STREAM',
+        socket.SOCK_DGRAM: 'SOCK_DGRAM'
+    }
+
+    return {
+        'fd': conn.fd,
+        'family': FAMILY[conn.family],
+        'type': TYPE[conn.type],
+        'local_addr': conn.laddr,
+        'remote_addr': conn.raddr,
+        'status': conn.status,
+        'pid': conn.pid
     }
