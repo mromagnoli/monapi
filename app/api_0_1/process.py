@@ -1,8 +1,9 @@
+from . import api
 from flask import jsonify
 from flask import url_for
-from . import api
 from flask import request
 from subprocess import PIPE
+
 import psutil
 import threading
 import shlex
@@ -70,8 +71,8 @@ def kill_process(pid):
             '_reason': str(e)
         }), 404
 
-@api.route('/process/<int:pid>/renice', methods=['GET'])
-@api.route('/process/<int:pid>/renice/<value>', methods=['GET'])
+@api.route('/process/<int:pid>/renice', methods=['GET', 'PUT'])
+@api.route('/process/<int:pid>/renice/<value>', methods=['GET', 'PUT'])
 def renice(pid, value=''):
     """Change priority of a process given
 
@@ -251,7 +252,7 @@ def __launch_process(path, params):
 
         global new_process
         args = shlex.split(path + ' ' + params)
-        new_process = psutil.Popen(args, stdout=PIPE)
+        new_process = psutil.Popen(args, shell=True, stdout=PIPE, stderr=PIPE)
     except Exception, e:
         new_process = e
 
