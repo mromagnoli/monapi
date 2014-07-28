@@ -22,19 +22,21 @@ You can:
 
 * **Launch a new process**
 
-`curl -XPOST <hostname:port>/api/<api_version>/process -d '{"path": "/path/to/exec", "params": "-as -in /shell/format --optional"}'`
+```curl -XPOST <hostname:port>/api/<api_version>/process  
+ -d '{"path": "/path/to/exec", "params": "-as -in /shell/format --optional"}'```
 
 * **Retrieve information about a particular precess by PID**
 
 `curl -XGET <hostname:port>/api/<api_version>/process/<pid>`
- 
+
 * **KIll a process**
 
 `curl -XGET <hostname:port>/api/<api_version>/process/<pid>/kill`
 
 * **Renice a process (root privilegies)**
 
-`curl -XGET <hostname:port>/api/<api_version>/process/<pid>/renice` increase by 1 the actual value.
+`curl -XGET <hostname:port>/api/<api_version>/process/<pid>/renice` increase by 1 the actual value.  
+
 `curl -XGET <hostname:port>/api/<api_version>/process/<pid>/renice/<value>` set the value passed.
 
 * **Retrieve process status**
@@ -49,6 +51,20 @@ You can:
 
 `curl -XGET <hostname:port>/api/<api_version>/connections`
 
+
+##Installation
+
+Note: it is convenient to do installation in a virtual environment.
+
+In Ubuntu:  
+  
+`$ sudo apt-get install python-virtualenv`  
+`$ git clone https://github.com/mromagnoli/monapi.git`  
+`$ cd monapi`  
+`$ sudo virtualenv venv` (*venv* or whatever you want to name it)  
+`$ source venv/bin/activate` (if **root** privilegies are needed, before change user `sudo su`)  
+`$ pip install -r requirements.txt`  
+`$ python api/app/__init__.py`  
 
 
 ##TODO
