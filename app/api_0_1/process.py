@@ -138,9 +138,9 @@ def process_connections(pid):
 
     :return JSON
     """
-    p = psutil.Process(pid)
-    connections = []
     try:
+        p = psutil.Process(pid)
+        connections = []
         for conn in p.connections():
             connections.append(_makeConnectionResponse(conn, False))
         return jsonify({
